@@ -4,8 +4,8 @@ PyPDB: A Python API for the RCSB Protein Data Bank
 Written by William Gilpin, 2015. If you find this code useful,
 please consider citing our paper:
 
-  	Gilpin, W. "PyPDB: A Python API for the Protein Data Bank." 
-  	Bioinformatics, Oxford Journals, 2015.
+    Gilpin, W. "PyPDB: A Python API for the Protein Data Bank."
+    Bioinformatics, Oxford Journals, 2015.
 
 -----
 
@@ -113,48 +113,46 @@ def make_query(search_term, querytype='AdvancedKeywordQuery'):
 
     '''
     assert querytype in {'HoldingsQuery', 'ExpTypeQuery',
-                         'AdvancedKeywordQuery','StructureIdQuery',
+                         'AdvancedKeywordQuery', 'StructureIdQuery',
                          'ModifiedStructuresQuery', 'AdvancedAuthorQuery', 'MotifQuery',
                          'NoLigandQuery', 'PubmedIdQuery'
-                        }, 'Query type %s not supported yet' % querytype
+                         }, 'Query type %s not supported yet' % querytype
 
     query_params = dict()
     query_params['queryType'] = querytype
 
-    if querytype=='AdvancedKeywordQuery':
-        query_params['description'] = 'Text Search for: '+ search_term
+    if querytype == 'AdvancedKeywordQuery':
+        query_params['description'] = 'Text Search for: ' + search_term
         query_params['keywords'] = search_term
 
-    elif querytype=='NoLigandQuery':
+    elif querytype == 'NoLigandQuery':
         query_params['haveLigands'] = 'yes'
 
-    elif querytype=='AdvancedAuthorQuery':
-        query_params['description'] = 'Author Name: '+ search_term
+    elif querytype == 'AdvancedAuthorQuery':
+        query_params['description'] = 'Author Name: ' + search_term
         query_params['searchType'] = 'All Authors'
         query_params['audit_author.name'] = search_term
         query_params['exactMatch'] = 'false'
 
-    elif querytype=='MotifQuery':
-        query_params['description'] = 'Motif Query For: '+ search_term
+    elif querytype == 'MotifQuery':
+        query_params['description'] = 'Motif Query For: ' + search_term
         query_params['motif'] = search_term
 
     # search for a specific structure
-    elif querytype in ['StructureIdQuery','ModifiedStructuresQuery']:
+    elif querytype in ['StructureIdQuery', 'ModifiedStructuresQuery']:
         query_params['structureIdList'] = search_term
 
-    elif querytype=='ExpTypeQuery':
+    elif querytype == 'ExpTypeQuery':
         query_params['experimentalMethod'] = search_term
-        query_params['description'] = 'Experimental Method Search : Experimental Method='+ search_term
-        query_params['mvStructure.expMethod.value']= search_term
+        query_params['description'] = 'Experimental Method Search : Experimental Method=' + search_term
+        query_params['mvStructure.expMethod.value'] = search_term
 
-    elif querytype=='PubmedIdQuery':
-        query_params['description'] = 'Pubmed Id Search for Pubmed Id '+ search_term
+    elif querytype == 'PubmedIdQuery':
+        query_params['description'] = 'Pubmed Id Search for Pubmed Id ' + search_term
         query_params['pubMedIdList'] = search_term
-
 
     scan_params = dict()
     scan_params['orgPdbQuery'] = query_params
-
 
     return scan_params
 
@@ -213,9 +211,9 @@ def do_search(scan_params):
         warnings.warn('No results were obtained for this search')
 
     idlist = str(result)
-    idlist =idlist.split('\\n')
+    idlist = idlist.split('\\n')
     idlist[0] = idlist[0][-4:]
-    kk = idlist.pop(-1)
+    idlist.pop(-1)
 
     return idlist
 
@@ -266,7 +264,7 @@ def do_protsym_search(point_group, min_rmsd=0.0, max_rmsd=7.0):
 
     scan_params = dict()
     scan_params['orgPdbQuery'] = query_params
-    idlist =  do_search(scan_params)
+    idlist = do_search(scan_params)
     return idlist
 
 
@@ -293,8 +291,6 @@ def get_all():
     f = urllib.request.urlopen(req)
     result = f.read()
     assert result
-
-    kk = str(result)
 
     p = re.compile('structureId=\"...."')
     matches = p.findall(str(result))
@@ -336,7 +332,7 @@ def get_info(pdb_id, url_root='http://www.rcsb.org/pdb/rest/describeMol?structur
     result = f.read()
     assert result
 
-    out = xmltodict.parse(result,process_namespaces=True)
+    out = xmltodict.parse(result, process_namespaces=True)
 
     return out
 
@@ -467,7 +463,7 @@ def get_raw_blast(pdb_id, output_form='HTML', chain_id='A'):
     '''
 
     url_root = 'http://www.rcsb.org/pdb/rest/getBlastPDB2?structureId='
-    url = url_root + pdb_id + '&chainId='+ chain_id +'&outputFormat=' + output_form
+    url = url_root + pdb_id + '&chainId=' + chain_id + '&outputFormat=' + output_form
     req = urllib.request.Request(url)
     f = urllib.request.urlopen(req)
     result = f.read()
@@ -512,10 +508,9 @@ def parse_blast(blast_string):
     all_blast_ids = list()
 
     pattern = '></a>....:'
-    prog = re.compile(pattern)
 
     for item in soup.find_all('pre'):
-        if len(item.find_all('a'))==1:
+        if len(item.find_all('a')) == 1:
             all_blasts.append(item)
             blast_id = re.findall(pattern, str(item) )[0][-5:-1]
             all_blast_ids.append(blast_id)
@@ -896,7 +891,6 @@ def get_clusters(pdb_id):
     return remove_at_sign(out['representatives'])
 
 
-
 def find_results_gen(search_term, field='title'):
     '''
     Return a generator of the results returned by a search of
@@ -927,9 +921,8 @@ def find_results_gen(search_term, field='title'):
     scan_params = make_query(search_term, querytype='AdvancedKeywordQuery')
     search_result_ids = do_search(scan_params)
 
-    all_titles = []
     for pdb_result in search_result_ids:
-        result= describe_pdb(pdb_result)
+        result = describe_pdb(pdb_result)
         if field in result.keys():
             yield result[field]
 
@@ -948,7 +941,7 @@ def parse_results_gen(search_term, field='title', max_results = 100, sleep_time=
         The type of information to record about each entry
 
     max_results : int
-        The maximum number of results to search through when 
+        The maximum number of results to search through when
         determining the top results
 
     sleep_time : float
@@ -963,14 +956,14 @@ def parse_results_gen(search_term, field='title', max_results = 100, sleep_time=
 
     '''
 
-    if max_results*sleep_time > 30:
-        warnings.warn("Because of API limitations, this function\
-        will take at least " + str(max_results*sleep_time) + " seconds to return results.\
-        If you need greater speed, try modifying the optional argument sleep_time=.1, (although \
-        this may cause the search to time out)" )
+    if max_results * sleep_time > 30:
+        warnings.warn("Because of API limitations, this function will take at least " +
+                      str(max_results * sleep_time) + " seconds to return results." +
+                      "If you need greater speed, try modifying the optional argument" +
+                      " sleep_time=.1, (although this may cause the search to time out)" )
 
     all_data_raw = find_results_gen(search_term, field=field)
-    all_data =list()
+    all_data = list()
     while len(all_data) < max_results:
         all_data.append(all_data_raw.send(None))
         time.sleep(sleep_time)
@@ -1054,9 +1047,9 @@ def find_authors(search_term, **kwargs):
     for individual in all_individuals:
         individual = individual.replace('.,', '.;')
         author_list_clean = [x.strip() for x in individual.split(';')]
-        full_author_list+=author_list_clean
+        full_author_list += author_list_clean
 
-    out = list(chain.from_iterable(repeat(ii, c) for ii,c in Counter(full_author_list).most_common()))
+    out = list(chain.from_iterable(repeat(ii, c) for ii, c in Counter(full_author_list).most_common()))
 
     return remove_dupes(out)
 
@@ -1085,7 +1078,6 @@ def find_dates(search_term, **kwargs):
     '''
     all_dates = parse_results_gen(search_term, field='deposition_date', **kwargs)
     return all_dates
-
 
 
 def list_taxa(pdb_list, sleep_time=.1):
@@ -1135,26 +1127,26 @@ def list_taxa(pdb_list, sleep_time=.1):
 
 
     '''
-    
-    if len(pdb_list)*sleep_time > 30:
-        warnings.warn("Because of API limitations, this function\
-        will take at least " + str(len(pdb_list)*sleep_time) + " seconds to return results.\
-        If you need greater speed, try modifying the optional argument sleep_time=.1, (although \
-        this may cause the search to time out)" )
-    
+
+    if len(pdb_list) * sleep_time > 30:
+        warnings.warn("Because of API limitations, this function will take at least " +
+                      str(len(pdb_list) * sleep_time) + " seconds to return results." +
+                      "If you need greater speed, try modifying the optional argument" +
+                      " sleep_time=.1, (although this may cause the search to time out)" )
+
     taxa = []
 
     for pdb_id in pdb_list:
         all_info = get_all_info(pdb_id)
-        species_results = walk_nested_dict(all_info, 'Taxonomy', maxdepth=25,outputs=[])
-        first_result = walk_nested_dict(species_results,'@name',outputs=[])
+        species_results = walk_nested_dict(all_info, 'Taxonomy', maxdepth=25, outputs=[])
+        first_result = walk_nested_dict(species_results, '@name', outputs=[])
         if first_result:
             taxa.append(first_result[-1])
         else:
             taxa.append('Unknown')
 
         time.sleep(sleep_time)
-        
+
     return taxa
 
 def list_types(pdb_list, sleep_time=.1):
@@ -1166,7 +1158,7 @@ def list_types(pdb_list, sleep_time=.1):
 
     pdb_list : list of str
         List of PDB IDs
-        
+
     sleep_time : float
         Time (in seconds) to wait between requests. If this number is too small
         the API will stop working, but it appears to vary among different systems
@@ -1188,23 +1180,23 @@ def list_types(pdb_list, sleep_time=.1):
     >>> print(list_types(crispr_results[:5]))
     ['protein', 'protein', 'protein', 'protein', 'protein']
     '''
-    
-    if len(pdb_list)*sleep_time > 30:
-        warnings.warn("Because of API limitations, this function\
-        will take at least " + str(len(pdb_list)*sleep_time) + " seconds to return results.\
-        If you need greater speed, try modifying the optional argument sleep_time=.1, (although \
-        this may cause the search to time out)" )
-    
+
+    if len(pdb_list) * sleep_time > 30:
+        warnings.warn("Because of API limitations, this function will take at least " +
+                      str(len(pdb_list) * sleep_time) + " seconds to return results." +
+                      "If you need greater speed, try modifying the optional argument" +
+                      " sleep_time=.1, (although this may cause the search to time out)" )
+
     infotypes = []
     for pdb_id in pdb_list:
         all_info = get_all_info(pdb_id)
-        type_results = walk_nested_dict(all_info, '@type', maxdepth=25,outputs=[])
+        type_results = walk_nested_dict(all_info, '@type', maxdepth=25, outputs=[])
         if type_results:
             infotypes.append(type_results[-1])
         else:
             infotypes.append('Unknown')
         time.sleep(sleep_time)
-        
+
     return infotypes
 
 
