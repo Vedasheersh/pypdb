@@ -16,14 +16,11 @@ Documentation: http://williamgilpin.github.io/pypdb_docs/html
 PyPI: https://pypi.python.org/pypi/pypdb
 
 Please heed the PyPDB's MIT license, as well as those
-of its dependencies: matplotlib, numpy, and xmltodict
+of its dependencies: xmltodict
 
 '''
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-from collections import OrderedDict, Counter
+from collections import Counter
 from itertools import repeat, chain
 from sys import version_info
 if version_info[0] < 3:
