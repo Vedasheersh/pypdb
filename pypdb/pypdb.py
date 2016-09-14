@@ -25,7 +25,11 @@ import numpy as np
 
 from collections import OrderedDict, Counter
 from itertools import repeat, chain
-import urllib.request
+from sys import version_info
+if version_info[0] < 3:
+    import urllib2 as urllib_request
+else:
+    import urllib.request as urllib_request
 import time
 import re
 from json import loads, dumps
@@ -203,16 +207,19 @@ def do_search(scan_params):
     queryText = xmltodict.unparse(scan_params, pretty=False)
     queryText = queryText.encode()
 
-    req = urllib.request.Request(url, data=queryText)
-    f = urllib.request.urlopen(req)
+    req = urllib_request.Request(url, data=queryText)
+    f = urllib_request.urlopen(req)
     result = f.read()
 
     if not result:
         warnings.warn('No results were obtained for this search')
 
-    idlist = str(result)
-    idlist = idlist.split('\\n')
-    idlist[0] = idlist[0][-4:]
+    if version_info[0] < 3:
+        idlist = result.split('\n')
+    else:
+        idlist = str(result)
+        idlist = idlist.split('\\n')
+        idlist[0] = idlist[0][-4:]
     idlist.pop(-1)
 
     return idlist
@@ -287,8 +294,8 @@ def get_all():
 
     url = 'http://www.rcsb.org/pdb/rest/getCurrent'
 
-    req = urllib.request.Request(url)
-    f = urllib.request.urlopen(req)
+    req = urllib_request.Request(url)
+    f = urllib_request.urlopen(req)
     result = f.read()
     assert result
 
@@ -327,8 +334,8 @@ def get_info(pdb_id, url_root='http://www.rcsb.org/pdb/rest/describeMol?structur
     '''
 
     url = url_root + pdb_id
-    req = urllib.request.Request(url)
-    f = urllib.request.urlopen(req)
+    req = urllib_request.Request(url)
+    f = urllib_request.urlopen(req)
     result = f.read()
     assert result
 
@@ -390,8 +397,8 @@ def get_pdb_file(pdb_id, filetype='pdb', compression=False):
 
     fullurl += '&structureId=' + pdb_id
     # url = 'http://www.rcsb.org/pdb/files/'+pdb_id+'.pdb'
-    req = urllib.request.Request(fullurl)
-    f = urllib.request.urlopen(req)
+    req = urllib_request.Request(fullurl)
+    f = urllib_request.urlopen(req)
     result = f.read()
     result = result.decode('unicode_escape')
 
@@ -464,8 +471,8 @@ def get_raw_blast(pdb_id, output_form='HTML', chain_id='A'):
 
     url_root = 'http://www.rcsb.org/pdb/rest/getBlastPDB2?structureId='
     url = url_root + pdb_id + '&chainId=' + chain_id + '&outputFormat=' + output_form
-    req = urllib.request.Request(url)
-    f = urllib.request.urlopen(req)
+    req = urllib_request.Request(url)
+    f = urllib_request.urlopen(req)
     result = f.read()
     result = result.decode('unicode_escape')
     assert result
@@ -1287,65 +1294,62 @@ def remove_dupes(list_with_dupes):
 
 def walk_nested_dict(my_result, term, outputs=[], depth=0, maxdepth=25):
     '''
-    For a nested dictionary that may itself comprise lists of 
+    For a nested dictionary that may itself comprise lists of
     dictionaries of unknown length, determine if a key is anywhere
     in any of the dictionaries using a depth-first search
-    
+
     Parameters
     ----------
-    
+
     my_result : dict
         A nested dict containing lists, dicts, and other objects as vals
-        
+
     term : str
         The name of the key stored somewhere in the tree
-    
+
     maxdepth : int
         The maximum depth to search the results tree
-        
+
     depth : int
-        The depth of the search so far. 
+        The depth of the search so far.
         Users don't usually access this.
-        
+
     outputs : list
         All of the positive search results collected so far.
         Users don't usually access this.
-        
+
     Returns
     -------
-    
+
     outputs : list
         All of the search results.
-    
+
     '''
-    
+
     if depth > maxdepth:
-        warnings.warn('Maximum recursion depth exceeded. Returned None for the search results,'+
+        warnings.warn('Maximum recursion depth exceeded. Returned None for the search results,' +
                       ' try increasing the maxdepth keyword argument.')
         return None
-    
 
     depth = depth + 1
-    
-    if type(my_result)==dict:
+
+    if type(my_result) == dict:
         if term in my_result.keys():
             outputs.append(my_result[term])
 
         else:
             new_results = list(my_result.values())
-            walk_nested_dict(new_results, term, outputs=outputs, depth=depth,maxdepth=maxdepth)
-    
-    elif type(my_result)==list:
+            walk_nested_dict(new_results, term, outputs=outputs, depth=depth, maxdepth=maxdepth)
+    elif type(my_result) == list:
         for item in my_result:
-            walk_nested_dict(item, term, outputs=outputs, depth=depth,maxdepth=maxdepth)
-            
+            walk_nested_dict(item, term, outputs=outputs, depth=depth, maxdepth=maxdepth)
+
     else:
         pass
         # dead leaf
 
-    # this conditional may not be necessary    
+    # this conditional may not be necessary
     if outputs:
         return outputs
     else:
         return None
-    
